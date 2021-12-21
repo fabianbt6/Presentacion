@@ -1,0 +1,704 @@
+---
+title: "Desarrollo del sistema financiero y crecimiento económico en Costa Rica"
+author: "Fabián Brenes Trejos"
+date: "18/1/2021"
+output:
+  xaringan::moon_reader:
+    css: [xaringan-themer.css, width.css, estilo.css]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+
+library(xaringanthemer)
+
+style_duo_accent(primary_color = "#1f7aff", #Color numeración
+                 text_bold_color = "#1f7aff", #Texto resaltados
+                 secondary_color = "#020100", #Fondo subsecciones 
+                 inverse_header_color = "#FFFFFF", 
+                 title_slide_background_color = "#FFFFFF", #Fondo blanco
+                 header_color = "#1f7aff", #Titulo
+                 title_slide_text_color = "#020100", #Titulo
+                 background_color = "#FFFFFF",
+                 header_font_google = google_font("Oswald"),
+                 text_font_google   = google_font("Montserrat", "300", "300i"),
+                 code_font_google   = google_font("Fira Mono"),
+                 text_font_size = "1rem",
+                 header_h1_font_size = "2.75rem",
+                 header_h2_font_size = "1.75rem",
+                 header_h3_font_size = "1.25rem",
+                 table_row_even_background_color = "#FFFFFF"
+)
+
+```
+
+```{r libs, include=FALSE}
+#libs======================
+library(tidyverse)
+library(readxl)
+library(dygraphs)
+library(xts)
+library(forecast)
+library(ggiraph)
+library(plotly)
+library(lubridate)
+library(urca)
+library(zoo)
+library(car)
+library(kableExtra)
+library(lmtest)
+library(vars)
+library(latex2exp)
+library(tikzDevice)
+library(gtsummary)
+library(multDM)
+library(cowplot)
+library(DT)
+library(ggfan)
+library(gridExtra)
+
+```
+
+```{r datos, include=FALSE}
+#Cargar datos====================
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+load(file = "../Datos/data.RData")
+load(file = "../Datos/data_diff.RData")
+
+proy_2021 <- read_excel("../Datos/datos.xlsx",
+                        sheet = "proyeccion",
+                        range = "A1:I125",
+                        col_types = c("date",rep("numeric", 8)))
+
+historical_data <- read_excel("../Datos/datos.xlsx",
+                              sheet = "proyeccion",
+                              range = "J1:S121",
+                              col_types = c("date", rep("numeric", 9))) %>% 
+  select(fecha, pibr, des.sf)
+  
+proy_2021$fecha <- as.Date(proy_2021$fecha)
+historical_data$fecha <- as.Date(historical_data$fecha)
+
+proy_2021 <- proy_2021[(nrow(proy_2021) - 3):nrow(proy_2021), ]
+
+```
+
+```{r modelos, include=FALSE}
+#Modelos===================
+var <- VAR(dplyr::select(data, cpib.cri, des.sf),
+           type = "both",
+           lag.max = 12, 
+           ic = "AIC", 
+           exogen = dplyr::select(data, apert_comercial, cpib.usa, inflacion, tbp, vartc, est.d2, est.d3, est.d4))
+
+var_2020 <- VAR(data %>% filter(fecha < "2020-03-01") %>% dplyr::select(cpib.cri, des.sf) ,
+                type = "both",
+                lag.max = 12,
+                ic = "AIC",
+                exogen = data %>% filter(fecha < "2020-03-01") %>% dplyr::select(apert_comercial, cpib.usa, inflacion, tbp, vartc, est.d2, est.d3, est.d4))
+
+summary(var)
+
+vecm <- ca.jo(data %>% dplyr::select(cpib.cri, des.sf),
+              type = "eigen",
+              K = 5, 
+              dumvar = dplyr::select(data, apert_comercial, cpib.usa, inflacion, tbp, vartc, est.d2, est.d3, est.d4, tendencia),
+              spec = "longrun") 
+
+vecm.level <- vec2var(vecm, 1)
+
+```
+
+```{r funciones, include=FALSE}
+
+#funciones graficos==================
+graf_lin <- function(mydata, fecha, var, tit, lab, ylab) {
+  
+  mydata %>% 
+    select(!!fecha, !!var) %>% 
+    column_to_rownames(fecha) %>% as.xts() %>% 
+    dygraph(main = tit) %>% 
+    dyAxis("x", drawGrid = FALSE, label = "Fecha") %>%
+    dyAxis("y", drawGrid = FALSE, label = ylab) %>%
+    dySeries(var, label = lab, color = "#1f7aff") %>% 
+    dyOptions(axisLineWidth = 1.5, fillGraph = TRUE, drawGrid = FALSE)
+}
+
+tab_descriptivos <- function(mydata, var, dgts) {
+  
+  var <- enquo(var)
+  tab <- mydata %>% 
+    summarize(indicador = 1,
+              'Mínimo' = min(!!var), 
+              'Máximo' = max(!!var), 
+              Promedio = mean(!!var),
+              'Desviación Estándar' = sd(!!var)) %>% 
+    pivot_longer(-indicador, names_to = "Estadístico", values_to = "Valor") %>% 
+    select(-indicador)
+  
+  kable(tab, digits = dgts,  format = 'html', booktabs = T, 
+        caption = "Estadísticas Descriptivas") %>%
+    kable_classic("hover", full_width = F, font_size = 12) %>% 
+    column_spec(1, width = "9cm") %>% 
+    column_spec(2, width = "4cm")
+  
+}  
+```
+
+## CONTENIDO
+
+- Introducción 
+<br>
+
+- Objetivos <br>    
+
+- Métodos y datos <br>
+
+- Resultados <br>
+
+    + Modelo VAR <br>
+    
+    + Análisis de cointegración <br>
+    
+    + Modelo VECM <br>
+    
+    + Comparativo VAR y VECM <br>
+    
+    + Resultados de la simulación <br>
+
+- Conclusiones
+
+---
+
+class: inverse, center, middle
+
+# INTRODUCCIÓN
+
+---
+
+## Relación teórica entre sistema financiero y crecimiento económico
+
+.pull-left.w10[]
+
+.pull-right.w80[
+
+```{r, echo=FALSE}
+DiagrammeR::grViz("digraph {
+  graph [layout = dot, rankdir = TB]
+  
+  node [shape = rectangle]        
+  rec1 [label = 'Imperfecciones de mercado']
+  rec2 [label = 'Mercados e intermediarios financieros']
+  rec3 [label =  'Acumulación de capital']
+  rec4 [label = 'Innovación tecnológica']
+  rec5 [label = 'Crecimiento económico']
+  
+  # edge definitions with the node IDs
+  rec1 -> rec2 -> rec3 ; rec2 -> rec4; rec3 -> rec5; rec4 -> rec5 
+  }",
+  height = 400)
+```
+]
+
+---
+
+## Justificación del estudio
+
+- El sistema financiero en Costa Rica empezó a modernizarse en la década de los 80, con reformas de desregulación. 
+<br> 
+<br>
+
+--
+
+- No obstante, estudios demuestran que el sistema no ha alcanzado suficiente desarrollo.
+ + Mercado concentrado
+ + Altos niveles de márgenes de intermediación 
+<br>
+<br>
+ 
+--
+
+**¿Cuál es la relación entre el desarrollo del sistema financiero costarricense con respecto al crecimiento económico experimentado de 1997 a 2020?**
+
+---
+
+## Objetivos
+
+### General
+Estudiar la relación entre el desarrollo del sistema financiero y el crecimiento económico mediante modelos de series temporales multivariados, para el caso de Costa Rica, en el periodo 1997 - 2020.
+
+### Específicos
+- .small[Conocer tendencias, valores atípicos y correlaciones mediante un análisis exploratorio.]
+<br>
+
+- .small[Analizar los supuestos de estacionariedad por medio de análisis gráfico y pruebas estadísticas.]
+<br>
+
+- .small[Estudiar la cointegración entre las variables a partir de un modelo de vectores autorregresivos (VAR).]
+<br>
+
+- .small[Estimar los parámetros de cointegración con base en un modelo de corrección
+de error vectorial (VECM).]
+
+- .small[Identificar políticas para impulsar el crecimiento económico, mediante un estudio de simulaciones con el modelo ajustado.]
+
+---
+
+class: inverse, center, middle
+
+# MÉTODOS Y DATOS
+
+---
+
+class: inverse, center, middle
+
+# DATOS
+
+---
+
+## Muestra y variables
+
+### Muestra:
+
++ Primer timestre 2000 - cuarto trimestre 2020
++ Fuente: Banco Central de Costa Rica y  Oficina de Análisis Económico de EUA
+
+### Variables de estudio:
+
++ Crecimiento interanual de la economía
++ Desarollo del sistema financiero
+
+### Covariables:
+
++ Apertura Comercial
++ Producto Interno Bruto real de EUA (variación interanual)
++ Inflación
++ Tasa Básica Pasiva
++ Tipo de Cambio (variación internual)
+
+---
+
+## Crecimiento internual de la economía
+
+Cálculo: $log(PIB_t / PIB_{t-4})$ 
+
+.pull-left.w60[
+```{r, echo=F, fig.width=6, fig.height=6}
+
+graf_lin(data, "fecha", "log_pibryoy",
+         " ",
+         "Valor",
+         "Crecimiento anual")
+
+```
+]
+
+.pull-right.w40[
+```{r, echo=FALSE, fig.align='center', eval=T}
+
+pibr_df <- ur.df(data$log_pibryoy, type = "trend", selectlags = "AIC")
+
+pibr_diff_df <- ur.df(data_diff$log_pibryoy_diff, type = "drift", selectlags = "AIC") 
+
+tab <- tibble("Estadístico" = round(t(pibr_df@teststat)[, 1], 2) , 
+                 pibr_df@cval %>% as_tibble()) %>% 
+  bind_rows(tibble("Estadístico" = round(t(pibr_diff_df@teststat)[, 1], 2),
+                  pibr_diff_df@cval %>% as_tibble())) %>% 
+  mutate(`Parámetro` = c("$\\tau_3$", "$\\phi_2$", "$\\phi_3$", "$\\tau_2$", "$\\phi_1$")) %>% 
+  relocate(`Parámetro`, .before = "Estadístico")
+
+kable(tab, 
+      booktabs = TRUE, caption = "Prueba Dickey-Fuller",
+      label = "DF_niveles") %>%
+  kable_classic("hover", full_width = F, font_size = 12)  %>% 
+  column_spec(1, width = "10em") %>% 
+  add_header_above(c("", "", "Valores Críticos"  = 3)) %>% 
+  pack_rows("En niveles", 1, 3) %>% 
+  pack_rows("En primeras diferencias", 4, 5)
+
+```
+]
+
+---
+
+## Desarrollo del sistema financiero
+
+Cálculo: $\mbox{Créditos al sector privado no financiero} / \mbox{PIB nominal}$
+
+.pull-left.w60[
+```{r, echo=F, fig.width=6, fig.height=6}
+
+graf_lin(data, "fecha", "des.sf",
+         " ",
+         "Valor",
+         "Términos del PIB")
+
+```
+]
+.pull-right.w40[
+```{r, echo=FALSE, fig.align='center', eval=T}
+cred_pib_df <- ur.df(data$cred_pib, type = "trend", selectlags = "AIC")
+
+cred_pib_diff_df <- ur.df(data_diff$cred_pib_diff, type = "drift", selectlags = "AIC") 
+
+tab <- tibble("Estadístico" = round(t(cred_pib_df@teststat)[, 1], 2) , 
+                 cred_pib_df@cval %>% as_tibble()) %>% 
+  bind_rows(tibble("Estadístico" = round(t(cred_pib_diff_df@teststat)[, 1], 2),
+                  cred_pib_diff_df@cval %>% as_tibble())) %>% 
+  mutate(`Parámetro` = c("$\\tau_3$", "$\\phi_2$", "$\\phi_3$", "$\\tau_2$", "$\\phi_1$")) %>% 
+  relocate(`Parámetro`, .before = "Estadístico")
+
+kable(tab, 
+      booktabs = TRUE, caption = "Prueba Dickey-Fuller",
+      label = "DF_niveles") %>%
+  kable_classic("hover", full_width = F, font_size = 12)  %>% 
+  column_spec(1, width = "10em") %>% 
+  add_header_above(c("", "", "Valores Críticos"  = 3)) %>% 
+  pack_rows("En niveles", 1, 3) %>% 
+  pack_rows("En primeras diferencias", 4, 5)
+```
+]
+
+---
+
+## Covariables
+
+```{r, echo = FALSE, fig.width=10, fig.height=7, fig.align = 'center'}
+
+#Función
+graf_agrup <- function(mydata, var, ytit, tit) {
+  
+  var <- enquo(var)
+  ggplot(data = data, aes(x = fecha, y = !!var)) + 
+  geom_line(size = 0.25, colour = "#1f7aff") +
+  ylab(ytit) + 
+  ggtitle(tit) + 
+  theme_classic() %+replace% 
+  theme(plot.title = element_text(size = 12), 
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.title.y = element_text(angle = 90, size = 10, 
+                                    margin = margin(t = 0, r = 5, b = 0, l = 0)), 
+        axis.text.y = element_text(size = 10))
+  
+}
+
+
+#Grafico apertura comercial=========================
+g_apertcomercial <- graf_agrup(data, apert_comercial, "Porcentaje del PIB", 
+                               "Apertura Comercial")
+
+#Grafico crecimiento del PIB USA=========================
+g_pibusa <- graf_agrup(data, log_pibusayoy, "Var. anual",
+                       "PIB Real de EUA")
+
+#Grafico de variación del tipo de cambio=========================
+g_vartc <- graf_agrup(data, vartc, "Var. Anual",
+                      "Tipo de Cambio")
+  
+#Grafico TBP===================
+g_tbp <- graf_agrup(data, tbp, "Porcentaje",
+                    "Tasa Básica Pasiva")
+  
+#Grafico inflación===================
+g_inflacion <- graf_agrup(data, inflacion, "Var. Anual",
+                          "Inflación")
+
+#Graficos agrupados
+grid.arrange(g_apertcomercial, g_pibusa, g_vartc, g_tbp, g_inflacion) 
+
+
+```
+
+---
+
+## Matriz de correlaciones
+
+```{r, echo=FALSE}
+
+cormat <- data %>% 
+  select(cpib.cri, des.sf, apert_comercial, cpib.usa, inflacion, tbp, vartc) %>% 
+  cor() %>% 
+  round(2)
+
+nombres <- c("Crecimiento Económico", "Desarrollo del Sistema Financiero", "Apertura Comercial", "PIB de EUA (var. anual)", "Inflación", "TBP", "Tipo de Cambio (var. anual)")
+colnames(cormat) <- nombres
+row.names(cormat) <- nombres
+
+kable(cormat, booktabs = TRUE, 
+             label = "cormat") %>%
+  kable_classic("hover", full_width = F, font_size = 18) %>% 
+  column_spec(1, width = "10em") 
+
+```
+
+---
+
+class: inverse, center, middle
+
+# MÉTODOS
+
+---
+
+## Modelos VAR
+
+$$\mathbf{y}_t = A_1\mathbf{y}_{t-1} + \cdots + A_p\mathbf{y}_{t-p} + CD_t + \mathbf{u}_t$$
+<br>
+<br>
+En donde:
++ $\mathbf{y}_t$: Es un vector de $K$ variables endógenas $(\mathbf{y}_t = y_{1t}, \ldots, y_{kt}, \ldots, y_{Kt})$
+<br>
+<br>
++ $A_i$: Es una matriz de coeficientes de tamaño $(K \times K)$ con $i = 1,\ldots, p$
+<br>
+<br>
++ $\mathbf{u}_t$: Es un vector de procesos ruido blanco e invariante en el tiempo de $K$ dimensiones y covarianza definida y positiva $E(\mathbf{u}_t \mathbf{u}'_t) = \sum{u}$
+<br>
+<br>
++ $C$: Es una matriz de coeficientes de potenciales regresores determinísticas de tamaño $(K \times M)$ y $D_t$ son las variables determinísticas asociadas a $C$
+
+---
+
+## Modelos VAR: Causalidad de Granger
+
+Se define que una variable $Y_t$ causa $X_t$, si la predicción de $X_t$ resulta más certera utilizando toda la información disponible, que la predicción de $X_t$ excluyendo $Y_t$. 
+<br>
+<br>
+$$\sigma^2(X|U) < \sigma^2 (X|\overline{U-Y})$$
+<br>
+<br>
+En donde: 
++ $U$: Representa toda la información disponible. 
++ $\overline{Y}$: Valores pasados de $Y$. 
+
+---
+
+## VECM
+
++ En series de tiempo económicas, es recurrente que no sean estacionarias de orden 0 y que tengan tendencia. En estos casos, la regresión de las variables en niveles puede llevar a una regresión espúrea. 
+<br>
+
+--
+
++ Si el residuo de la regresión con variables no estacionarias es estacionario, se afirma que las series **cointegran** en el largo plazo, ya que existe una combinación lineal entre las variables que da como resultado un residuo con un orden de integración menor al de las variables en cuestión.
+<br>
+
+--
+
+$$\Delta y_t = \Gamma_1 \Delta y_{t-1} + \dots + \Gamma_{p-1}\Delta y_{t-p+1} + \Pi y_{t-p} + \mu + \Phi D_t + \epsilon_t$$
+<br>
+
+--
+
++ $0 < rk(\Pi) = r < K$: Implica que hay matrices $\alpha$ y $\beta$ de tamaño $r \times K$ tal que $\Pi = \alpha \beta'$. Por esta razón, $\alpha \beta' y_{t-p}$ es estacionaria. El rango de $\Pi$ corresponde al grado de cointegración del vector de variables $y_t$.
+
+---
+
+class: inverse, center, middle
+
+# RESULTADOS
+
+---
+
+## Modelo VAR
+
++ Modelo estimado:
+
+$$\begin{alignat}{1}
+    y_{1t} &= \pi_0 + \sum_{i=1}^{4}\beta_{1i}y_{1t-i} + \sum_{i=1}^{4}\beta_{2i}y_{2t-i} + X_t B_1  + \Phi_1 D_t +  S_t T_1  + \epsilon_{1t}\\
+    y_{2t} &= \psi_0 + \sum_{i=1}^{4}\beta_{1i}y_{1t-i} + \sum_{i=1}^{4}\beta_{2i}y_{2t-i} + X_t B_2  + \Phi_2 D_t + S_t T_2  + \epsilon_{2t}
+    \end{alignat}$$
+
+Incluye:  
+
++ 4 rezagos de las variables endógenas con base al criterio de Akaike
+<br>
+
++ cinco variables exógenas 
+<br>
+
++ Constante 
+<br>
+
++ Tendencia 
+<br>
+
++ variables dicotómicas para capturar estacionalidad
+
+---
+### Modelo VAR: Coeficientes estimados y pruebas de diagnóstico
+
+.pull-left.w45[
+```{r, echo=FALSE}
+
+tab_var <- tibble(`Parámetros` = names(var$varresult$cpib.cri$coefficients), 
+                  cpib.cri = round(var$varresult$cpib.cri$coefficients, 3),
+                  t1 = round(summary(var)$varresult$cpib.cri$coefficients[, "t value"], 2),
+                  pvalue1 = summary(var)$varresult$cpib.cri$coefficients[, "Pr(>|t|)"],
+                  stars1 = ifelse(pvalue1 <= 0.001, " ***", 
+                                  ifelse(pvalue1 <= 0.01, " **", ifelse(pvalue1 <= 0.05, " *", ifelse(pvalue1 <= 0.1, ".", "")))), 
+                  des.sf = round(var$varresult$des.sf$coefficients, 3), 
+                  t2 = round(summary(var)$varresult$des.sf$coefficients[, "t value"], 2),
+                  pvalue2 = summary(var)$varresult$des.sf$coefficients[, "Pr(>|t|)"],
+                  stars2 = ifelse(pvalue2 <= 0.001, " ***", ifelse(pvalue2 <= 0.01, " **", 
+                                                                   ifelse(pvalue2 <= 0.05, " *", ifelse(pvalue2 <= 0.1, ".", ""))))) %>%  
+  mutate(cpib.cri = paste0(paste0(paste0(paste0(cpib.cri, " ("),t1),")"), stars1),
+         des.sf = paste0(paste0(paste0(paste0(des.sf, " ("),t2),")"), stars2)) %>% 
+  dplyr::select(`Parámetros`, cpib.cri, des.sf) %>% 
+  column_to_rownames(var = "Parámetros")
+
+kable(tab_var, booktabs = TRUE,
+      caption = "Coeficientes estimados del modelo VAR(4)") %>% 
+  kable_classic("hover", font_size = 13) %>% 
+  column_spec(1, width = "3cm") %>% 
+  column_spec(2, width = "3cm") %>% 
+  column_spec(3, width = "3cm") %>% 
+  footnote(general_title = "",
+           general = c("Códigos de significancia: 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1", "Estadístico t en paréntesis"))
+
+```
+]
+.pull-right.w45[
+
+```{r, echo=FALSE}
+
+ptm_test <- serial.test(var, type = "PT.asymptotic")
+arch <- arch.test(var, multivariate.only = T)
+jb <- normality.test(var, multivariate.only = T)
+
+tabla_var_tests <- tibble(Prueba = c("Portmanteau", "ARCH", "Jarque-Bera"),
+                          `Estadístico` = c(round(ptm_test$serial$statistic, 2),
+                                            round(arch$arch.mul$statistic, 2), 
+                                            round(jb$jb.mul$JB$statistic, 2)),
+                          `Valor p` =  c(round(ptm_test$serial$p.value, 2), 
+                                         round(arch$arch.mul$p.value, 2), 
+                                         round(jb$jb.mul$JB$p.value, 2)))  
+
+kable(tabla_var_tests, booktabs = TRUE, 
+      caption = "Pruebas de diagnóstico del VAR") %>% 
+  kable_classic("hover", font_size = 13)
+
+```
+<br>
+<br>
+```{r, echo=FALSE}
+
+tab_raizes <- tibble(param = 'Valores propios',
+                     val = round(roots(var), 2)) %>% 
+  mutate(cons = 1:n())
+
+tab_raizes <- tab_raizes %>% pivot_wider(param, cons, values_from = val) %>%   
+  column_to_rownames("param")
+
+kable(tab_raizes, booktabs = TRUE,
+      caption = "Módulo de los valores propios de los coeficientes") %>%
+  kable_classic("hover", font_size = 13)
+
+
+```
+<br>
+<br>
+```{r, echo=FALSE}
+
+granger_cred <- causality(var, cause = "des.sf")
+granger_pib <- causality(var, cause = "cpib.cri")
+
+tabla_caus <- tibble(Prueba  = c("D.S.F causa en el sentido de Granger a C.E.", 
+                                  "C.E. causa en el sentido de Granger a D.S.F"),
+                     `Estadístico` = c(round(granger_cred$Granger$statistic[1, ], 3), 
+                                       round(granger_pib$Granger$statistic[1, ], 3)),
+                     `Valor p` = c(round(granger_cred$Granger$p.value[1, ], 3), 
+                                   round(granger_pib$Granger$p.value[1, ], 3))) 
+
+kable(tabla_caus, booktabs = TRUE,
+      caption = "Prueba de Causalidad de Granger") %>% 
+  kable_classic("hover", font_size = 13) %>% 
+  footnote(general_title = "",
+           general = c("C.E. = Crecimiento económico", 
+                     "D.S.F. = Desarrollo del Sistema Financiero"))
+```
+]
+
+---
+
+### Modelo VAR: Gráficos impulso - respuesta
+
+.pull-left.w45[
+```{r, echo=FALSE}
+
+irf1 <- irf(var,
+            impulse = "des.sf",
+            response = "cpib.cri",
+            n.ahead = 24,
+            cumulative = F)  
+
+var_dsf_crec_simple <- tibble(irf = irf1$irf %>% unlist(), 
+                              l_inf = irf1$Lower %>% unlist(),
+                              l_sup = irf1$Upper %>% unlist()) %>% 
+  mutate(tipo = "Efecto simple", 
+         modelo = "mod1", 
+         periodo = 0:(nrow(.) - 1))
+
+
+var_dsf_crec_simple %>% 
+  ggplot(aes(x = periodo, y = irf)) +
+  geom_line(colour = "#1f7aff", size = 1) +
+  scale_x_continuous(breaks = seq(0, 36, by = 4)) +
+  geom_hline(yintercept = 0) +  
+  geom_line(aes(x = periodo, y = l_sup), colour = "black", linetype = "dashed", size = 1) + 
+  geom_line(aes(x = periodo, y = l_inf), colour = "black", linetype = "dashed", size = 1) +
+  ylab("crec. econ.") +
+  ggtitle("Impacto en el crec. econ a un impulso en el des. s.f. \n ") +
+  theme_bw() %+replace%
+  theme(legend.position = "none", 
+        plot.title = element_text(size = 18),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title = element_text(size = 12), 
+        axis.text=element_text(size = 12), 
+        strip.text.y = element_text(size = 12))
+```
+]
+
+.pull-right.w45[
+```{r, echo=FALSE}
+
+irf1 <- irf(var,
+            impulse = "cpib.cri",
+            response = "des.sf",
+            n.ahead = 24,
+            cumulative = F)  
+
+var_crec_dsf_simple <- tibble(irf = irf1$irf %>% unlist(), 
+                              l_inf = irf1$Lower %>% unlist(),
+                              l_sup = irf1$Upper %>% unlist()) %>% 
+  mutate(tipo = "Efecto simple", 
+         modelo = "mod1", 
+         periodo = 0:(nrow(.) - 1))
+
+var_crec_dsf_simple %>% 
+  ggplot(aes(x = periodo, y = irf)) +
+  geom_line(colour = "#1f7aff", size = 1) +
+  scale_x_continuous(breaks = seq(0, 36, by = 4)) +
+  geom_hline(yintercept = 0) +  
+  geom_line(aes(x = periodo, y = l_sup), colour = "black", linetype = "dashed", size = 1) + 
+  geom_line(aes(x = periodo, y = l_inf), colour = "black", linetype = "dashed", size = 1) +
+  ylab("Desarrollo del s.f.") +
+  ggtitle("Impacto en el des. s.f. a un impulso del crec. econ. \n") +
+  theme_bw() %+replace%
+  theme(legend.position = "none", 
+        plot.title = element_text(size = 18),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title = element_text(size = 12), 
+        axis.text=element_text(size = 12), 
+        strip.text.y = element_text(size = 12))
+
+
+```
+]
+

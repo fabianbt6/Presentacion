@@ -1,0 +1,14 @@
+
+.large {font-size: 130%}
+.small {font-size: 80%}
+.tiny {font-size: 50%} 
+
+body {
+  text-align: justify;
+}
+
+<style>
+.table-hover > tbody > tr:hover { 
+  background-color: #1f7aff;
+}
+<style>
