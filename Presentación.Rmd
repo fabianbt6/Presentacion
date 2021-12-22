@@ -1,7 +1,7 @@
 ---
 title: "Desarrollo del sistema financiero y crecimiento económico en Costa Rica"
 author: "Fabián Brenes Trejos"
-date: "18/1/2021"
+date: "18/1/2022"
 output:
   xaringan::moon_reader:
     css: [xaringan-themer.css, width.css, estilo.css]
@@ -504,6 +504,46 @@ class: inverse, center, middle
 
 ---
 
+## Análisis de cointegración
+
+Se estiman 2 modelos y se analiza el parámetro $\Pi$:
+
+1. Modelo sin covariables:
+$$\Delta Y_t = \Gamma_1 \Delta Y_{t-1} + \cdots + \Gamma_{k-1} \Delta Y_{t-k+1} + \Pi Y_{t-k} + \mu + \epsilon_t$$  
+2. Modelos con covariables:
+$$\Delta Y_t = \Gamma_1 \Delta Y_{t-1} + \cdots + \Gamma_{k-1} \Delta Y_{t-k+1} + \Pi Y_{t-k} + \mu + \Omega X_t + \epsilon_t$$
+
+<br>
+```{r, echo = FALSE}
+
+cajo_covars <- ca.jo(data %>% dplyr::select(cpib.cri, des.sf),
+                     type = "eigen",
+                     K = 5, 
+                     dumvar = dplyr::select(data, apert_comercial, cpib.usa, inflacion, tbp, 
+                                            vartc, est.d2, est.d3, est.d4, tendencia),
+                     spec = "longrun") %>% summary()
+
+cajo_simple <- ca.jo(data %>% dplyr::select(log_pibryoy, cred_pib), 
+      type = "eigen",  
+      K = 5, 
+      spec = "longrun") %>% summary()
+
+tabla_cajo2 <- tibble(`Hipótesis` = c("r <= 1", "r = 0"), 
+                      "Modelo 1" = round(cajo_simple@teststat, 2),
+                      "Modelo 2" = round(cajo_covars@teststat, 2),
+                      round(cajo_simple@cval, 2) %>% as_tibble())
+
+knitr::kable(tabla_cajo2, booktabs = TRUE, 
+             caption = "Rango de cointegración: Estadístico de auto-valor máximo" ,
+             label = "cajo") %>% 
+  kable_classic(font_size = 15) %>% 
+  column_spec(1, width = "10em") %>% 
+  add_header_above(c("", "Estadístico" = 2, "Valores Críticos"  = 3)
+                   )
+```
+
+---
+
 ## Modelo VAR
 
 + Modelo estimado:
@@ -697,8 +737,9 @@ var_crec_dsf_simple %>%
         axis.title = element_text(size = 12), 
         axis.text=element_text(size = 12), 
         strip.text.y = element_text(size = 12))
-
-
 ```
 ]
+
+
+
 
