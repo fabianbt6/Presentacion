@@ -110,6 +110,7 @@ vecm <- ca.jo(data %>% dplyr::select(cpib.cri, des.sf),
               spec = "longrun") 
 
 vecm.level <- vec2var(vecm, 1)
+vecm.r1 <- cajorls(vecm, r = 1)
 
 ```
 
@@ -147,6 +148,58 @@ tab_descriptivos <- function(mydata, var, dgts) {
     column_spec(2, width = "4cm")
   
 }  
+
+#Funciones para las simulaciones=======================
+
+
+generar_datos_sim1 <- function(variable, q.inf, q.sup) {
+  
+  nombres <- c("fecha", "apert_comercial", "cpib.usa", "inflacion", "tbp", "vartc",
+               "est.d2", "est.d3", "est.d4") 
+  var <- sym(variable)
+  
+  pos <- which(nombres == as_label(var))
+  
+  mydata <- data %>% dplyr::select(fecha, {{var}}) %>% 
+    group_by(quarter(fecha)) %>% 
+    summarize(lim.inf = quantile(x = {{var}}, q.inf),
+              lim.sup = quantile(x = {{var}}, q.sup), 
+              sim = runif(1, lim.inf, lim.sup))
+  
+  mydata <- bind_cols(proy_2021 %>% select(-{{var}}),
+                      mydata %>% select(sim)) %>% 
+    relocate(sim, .before = pos)
+  
+  colnames(mydata) <- nombres
+  
+  mydata <- mydata %>% select(-fecha)
+  
+  return(mydata)  
+}
+
+generar_datos_sim2 <- function(data, variable, q.inf, q.sup) {
+  
+  mydata <- data %>% dplyr::select(fecha, {{variable}}) %>% 
+    group_by(quarter(fecha)) %>% 
+    summarize(lim.inf = quantile(x = {{variable}}, q.inf),
+              lim.sup = quantile(x = {{variable}}, q.sup), 
+              sim = runif(1, lim.inf, lim.sup))
+  
+  return(mydata$sim)  
+}
+
+generar_determ <- function(fecha1, tendencia1){
+  
+  tibble(periodo = 1:4,
+         fecha = add_with_rollback(fecha1, months(periodo * 3)),
+         est.d2 = ifelse(quarter(fecha) == 2, 1, 0),
+         est.d3 = ifelse(quarter(fecha) == 3, 1, 0),
+         est.d4 = ifelse(quarter(fecha) == 4, 1, 0),
+         tendencia = tendencia1 + periodo) %>% 
+    select(-c(periodo, fecha))
+}
+
+
 ```
 
 ## CONTENIDO
@@ -740,6 +793,315 @@ var_crec_dsf_simple %>%
 ```
 ]
 
+---
 
+## VECM
+
+.pull-left.w45[
+```{r, echo=FALSE}
+
+tab_vecm <- tibble(`Parámetros` = rownames(vecm.r1$rlm$coefficients),
+                   cpib.cri = round(vecm.r1$rlm$coefficients[, 1], 3),
+                   t1 = round(summary(vecm.r1$rlm)$'Response cpib.cri.d'$coefficients[, "t value"], 2),
+                   pvalue1 = summary(vecm.r1$rlm)$'Response cpib.cri.d'$coefficients[, "Pr(>|t|)"],
+                   stars1 = ifelse(pvalue1 <= 0.001, " ***", ifelse(pvalue1 <= 0.01, " **", 
+                                                                   ifelse(pvalue1 <= 0.05, " *", ifelse(pvalue1 <= 0.1, ".", "")))), 
+                  des.sf = round(vecm.r1$rlm$coefficients[, 2], 3), 
+                  t2 = round(summary(vecm.r1$rlm)$'Response des.sf.d'$coefficients[, "t value"], 2),
+                  pvalue2 = summary(vecm.r1$rlm)$'Response des.sf.d'$coefficients[, "Pr(>|t|)"],
+                  stars2 = ifelse(pvalue2 <= 0.001, " ***", ifelse(pvalue2 <= 0.01, " **", 
+                                                                   ifelse(pvalue2 <= 0.05, " *", ifelse(pvalue2 <= 0.1, ".", ""))))) %>%  
+  mutate(cpib.cri = paste0(paste0(paste0(paste0(cpib.cri, " ("),t1),")"), stars1),
+         des.sf = paste0(paste0(paste0(paste0(des.sf, " ("),t2),")"), stars2)) %>% 
+  dplyr::select(`Parámetros`, cpib.cri, des.sf) %>% 
+  column_to_rownames(var = "Parámetros")
+
+knitr::kable(tab_vecm, booktabs = TRUE, 
+             caption = "Coeficientes estimados del modelo VECM") %>% 
+  kable_classic("hover", font_size = 11) %>% 
+  column_spec(1, width = "3cm") %>% 
+  column_spec(2, width = "3cm") %>% 
+  column_spec(3, width = "3cm") %>% 
+  footnote(general_title = "",
+           general = c("Códigos de significancia: 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1", 
+                       "Estadístico t en paréntesis"))
+```
+]
+
+.pull-right.w45[
+```{r, echo=FALSE}
+
+ptm_test_vecm <- serial.test(vecm.level, type = "PT.asymptotic")
+arch_vecm <- arch.test(vecm.level, multivariate.only = T)
+jb_vecm <- normality.test(vecm.level, multivariate.only = T)
+
+tabla_vecm_tests <- tibble(Prueba = c("Portmanteau", "ARCH", "Jarque-Bera"),
+                          `Estadístico` = c(round(ptm_test_vecm$serial$statistic, 2),
+                                            round(arch_vecm$arch.mul$statistic, 2), 
+                                            round(jb_vecm$jb.mul$JB$statistic, 2)),
+                          `Valor p` =  c(round(ptm_test_vecm$serial$p.value, 2), 
+                                         round(arch_vecm$arch.mul$p.value, 2), 
+                                         round(jb_vecm$jb.mul$JB$p.value, 2)))  
+
+kable(tabla_vecm_tests, booktabs = TRUE, 
+             caption = "Pruebas de diagnóstico del VECM") %>% 
+  kable_classic("hover", font_size = 13)
+```
+]
+
+---
+
+### VECM: Gráficos impulso - respuesta
+
+.pull-left.w45[
+
+```{r, echo=FALSE}
+
+irf1 <- irf(vecm.level,
+            impulse = "des.sf",
+            response = "cpib.cri",
+            n.ahead = 24,
+            cumulative = F)  
+
+vecm_dsf_crec_simple <- tibble(irf = irf1$irf %>% unlist(), 
+                               l_inf = irf1$Lower %>% unlist(), 
+                               l_sup = irf1$Upper %>% unlist()) %>% 
+  mutate(tipo = "Efecto simple", 
+         modelo = "mod1", 
+         periodo = 0:(nrow(.) - 1))
+
+vecm_dsf_crec_simple %>% 
+  ggplot(aes(x = periodo, y = irf)) +
+  geom_line(colour = "#1f7aff", size = 1) +
+  scale_x_continuous(breaks = seq(0, 36, by = 4)) +
+  geom_hline(yintercept = 0) +  
+  geom_line(aes(x = periodo, y = l_sup), colour = "black", linetype = "dashed", size = 1) + 
+  geom_line(aes(x = periodo, y = l_inf), colour = "black", linetype = "dashed", size = 1) +
+  ylab("crec. econ.") +
+  ggtitle("Impacto en el crec. econ a un impulso en el des. s.f. \n ") +
+  theme_bw() %+replace%
+  theme(legend.position = "none", 
+        plot.title = element_text(size = 18),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title = element_text(size = 12), 
+        axis.text=element_text(size = 12), 
+        strip.text.y = element_text(size = 12))
+
+```
+
+]
+
+.pull-right.w45[
+```{r, echo=FALSE}
+
+irf1 <- irf(vecm.level,
+            impulse = "cpib.cri",
+            response = "des.sf",
+            n.ahead = 24,
+            cumulative = F)  
+
+vecm_crec_dsf_simple <- tibble(irf = irf1$irf %>% unlist(), 
+                               l_inf = irf1$Lower %>% unlist(), 
+                               l_sup = irf1$Upper %>% unlist()) %>% 
+  mutate(tipo = "Efecto simple", 
+         modelo = "mod1", 
+         periodo = 0:(nrow(.) - 1))
+
+vecm_crec_dsf_simple %>% 
+  ggplot(aes(x = periodo, y = irf)) +
+  geom_line(colour = "#1f7aff", size = 1) +
+  scale_x_continuous(breaks = seq(0, 36, by = 4)) +
+  geom_hline(yintercept = 0) +  
+  geom_line(aes(x = periodo, y = l_sup), colour = "black", linetype = "dashed", size = 1) + 
+  geom_line(aes(x = periodo, y = l_inf), colour = "black", linetype = "dashed", size = 1) +
+  ylab("Desarrollo del s.f.") +
+  ggtitle("Impacto en el des. s.f. a un impulso en el crec. econ \n ") +
+  theme_bw() %+replace%
+  theme(legend.position = "none", 
+        plot.title = element_text(size = 18),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title = element_text(size = 12), 
+        axis.text=element_text(size = 12), 
+        strip.text.y = element_text(size = 12))
+
+```
+]
+
+---
+
+### Comparativo VAR vs VECM
+
+.pull-left.w45[
+```{r, echo=FALSE}
+
+irf_data <- tibble(VAR_crec.econ = irf(var,
+                                       impulse = "des.sf",
+                                       response =  "cpib.cri",
+                                       n.ahead = 24,
+                                       boot = F)$irf$des.sf[, 1], 
+                   VECM_crec.econ = irf(vecm.level,
+                                        impulse = "des.sf",
+                                        response =  "cpib.cri",
+                                        n.ahead = 24,
+                                        boot = F)$irf$des.sf[, 1], 
+                   VAR_des.sf = irf(var,
+                                    impulse = "cpib.cri",
+                                    response =  "des.sf",
+                                    n.ahead = 24,
+                                    boot = F)$irf$cpib.cri[, 1],
+                   VECM_des.sf = irf(vecm.level,
+                                    impulse = "cpib.cri",
+                                    response = "des.sf",
+                                    n.ahead = 24,
+                                    boot = F)$irf$cpib.cri[, 1]) %>% mutate(periodo = 1:n())
+
+
+irf_data_long <- irf_data %>% 
+  pivot_longer(-periodo, names_sep = "_", names_to = c("modelo", "indicador"), values_to = "irf")
+
+irf_data_long %>% 
+  dplyr::filter(indicador == "crec.econ") %>% 
+  ggplot(aes(x = periodo, y = irf, colour = modelo)) + geom_line(size = 1) +
+  scale_color_manual(values = c("red", "#1f7aff")) +
+  scale_x_continuous(breaks = seq(0, 24, by = 2)) +
+  ylab("crec. econ.") +
+  ggtitle("Impacto en el crec. econ a un impulso en el des. s.f. \n ") +
+  theme_bw() %+replace%
+  theme(legend.position = "bottom", 
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13),
+        plot.title = element_text(size = 18),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title = element_text(size = 12), 
+        axis.text=element_text(size = 12), 
+        strip.text.y = element_text(size = 12))
+
+```
+]
+
+.pull-right.w45[
+```{r,echo=FALSE}
+
+irf_data_long %>% 
+  dplyr::filter(indicador == "des.sf") %>% 
+  ggplot(aes(x = periodo, y = irf, colour = modelo)) + geom_line(size = 1) +
+  scale_color_manual(values = c("red", "darkblue")) +
+  scale_x_continuous(breaks = seq(0, 24, by = 2)) +
+  ylab("Desarrollo del s.f.") +
+  ggtitle("Impacto en el des. s.f. a un impulso en el crec. econ \n ") +
+  theme_bw() %+replace%
+  theme(legend.position = "bottom",
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 13),
+        plot.title = element_text(size = 18),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title = element_text(size = 12), 
+        axis.text=element_text(size = 12), 
+        strip.text.y = element_text(size = 12))
+```
+]
+
+---
+
+## Simulaciones: Análisis de Sensibilidad
+
+**Objetivo: ** .small[Identificar variaciones en las variables exógenas que pueden ocasionar fuertes desviaciones en las estimaciones de crecimiento económico y desarrollo del sistema financiero, con respecto al escenario base.]
+
+**Pasos: **
+
+.small[
+1. Se estima un escenario base. 
+
+2. Tomando en cuenta los quintiles calculados de los datos históricos de cada covariable,  se generó 100 observaciones, manteniendo los valores del escenario base para las demás variables exógenas.
+
+3. Con los datos generados para las covariables, se estiman los valores empleando el modelo VAR.
+]
+
+```{r escenario_base, echo = FALSE, message=FALSE}
+#Proyección 2021 con datos observados======================
+
+escen_base <- bind_cols(tibble(Fecha = c("2021-03-01", "2021-06-01", "2021-09-01", "2021-12-01")), 
+                        round(proy_2021[(nrow(proy_2021) - 3):nrow(proy_2021), -c(1, 7, 8, 9)], 4))
+colnames(escen_base) <- c("Fecha", "Apertura Comercial", "PIB USA", "Inflación", "TBP", "Tipo de Cambio (var. anual)")
+
+pred_base_2021 <- predict(var,
+                          dumvar = proy_2021[(nrow(proy_2021) - 3):nrow(proy_2021), -1],
+                          n.ahead = 4)
+
+#Crecimiento del PIB
+pred_cpib <- proy_2021 %>% filter(fecha > "2020-12-01") %>% select(fecha) %>% 
+  bind_cols(pred_base_2021$fcst$cpib.cri %>% as_tibble) %>% 
+  select(-CI) %>% 
+  bind_rows(tibble(fecha = date("2020-12-01"), 
+                   fcst = data %>%
+                     select(fecha, cpib.cri) %>% 
+                     filter(fecha == "2020-12-01") %>% 
+                     select(-fecha) %>% 
+                     as.numeric(), 
+                   lower = fcst, 
+                   upper = fcst))
+
+pred_cpib_long <- pred_cpib %>% 
+  pivot_longer(-fecha, names_to = "tipo", values_to = "valor") %>% 
+  mutate(fecha.l4 = add_with_rollback(fecha, months(-12)), 
+         yr = year(fecha)) %>% 
+  left_join(data %>% select(fecha, pibr), 
+            by = c("fecha.l4" = "fecha")) %>% 
+  mutate(pibr.l4 = pibr) %>% 
+  select(-pibr) %>% 
+  mutate(pibr = exp(log(pibr.l4) + valor))
+
+cpib_2021 <- pred_cpib_long %>% 
+  group_by(yr, tipo) %>% 
+  summarize(crec.anual = log(sum(pibr)) - log(sum(pibr.l4)))
+
+#Desarrollo del sistema financiero
+pred_des.sf <- proy_2021 %>% 
+  filter(fecha > "2020-12-01") %>% 
+  select(fecha) %>% 
+  bind_cols(pred_base_2021$fcst$des.sf %>% as_tibble) %>%
+  select(-CI) %>% 
+  bind_rows(tibble(fecha = date("2020-12-01"), 
+                   fcst = data %>%
+                     select(fecha, des.sf) %>% 
+                     filter(fecha == "2020-12-01") %>% 
+                     select(-fecha) %>% 
+                     as.numeric(), 
+                   lower = fcst, 
+                   upper = fcst))
+
+estimaciones_2021_trim <- tibble(pred_cpib) %>% 
+  left_join(pred_des.sf, by = "fecha") %>% 
+  pivot_longer(-fecha) %>% 
+  mutate(value = round(value, 2)) %>% 
+  pivot_wider(fecha)
+
+estimaciones_2021 <- tibble(Variable = c("Crecimiento económico", "Desarrollo del S.F."), 
+                            BCCR = c(0.039, NA), 
+                            "Estimación" = round(c(as.numeric(cpib_2021[4, 3]), 
+                                             as.numeric(pred_des.sf[4, 2])), 4), 
+                            "Límite Inferior" = round(c(as.numeric(cpib_2021[5, 3]), 
+                                                  as.numeric(pred_des.sf[4, 3])), 4), 
+                            "Límite Superior" = round(c(as.numeric(cpib_2021[6, 3]),
+                                                  as.numeric(pred_des.sf[4, 4])), 4))
+
+df_2021 <- tibble("Estimación" = as.numeric(pred_des.sf[4, 2]),
+                  "Límite Inferior" = as.numeric(pred_des.sf[4, 3]), 
+                  "Límite Superior" = as.numeric(pred_des.sf[4, 4]))
+
+kable(estimaciones_2021, booktabs = TRUE,
+             caption = "Estimaciones del modelo VAR para el escenario base") %>% 
+  kable_classic("hover", font_size = 16, full_width = F) %>% 
+  add_header_above(c("","", "Modelo VAR" = 3)) 
+
+```
+
+---
+
+### Análisis de Sensibilidad
 
 
