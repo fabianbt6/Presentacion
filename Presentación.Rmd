@@ -1551,10 +1551,10 @@ class: inverse, center, middle
 ---
 
 <br>
-+ Se aporta evidencia estadísticamente significatica sobre el nexo entre crecimiento económico y desarrollo del sistema financiero.  
++ Se aporta evidencia estadísticamente significativa sobre el nexo entre crecimiento económico y desarrollo del sistema financiero.  
 
 <br>
-+  La respuesta del crecimiento económico a un shock en el desarrollo del sistema financiero es estadísticamente significativo.   
++ El crecimiento económico aumenta entre 0.4% y 0.6% al incrementar en una unidad del desarrollo del sistema financiero.  
 
 <br>
 + Los resultados de las funciones impulso-respuesta del desarrollo del sistema financiero a un impulso en el crecimiento económico difieren entre el VAR y el VECM.   
