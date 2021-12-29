@@ -750,9 +750,9 @@ var_dsf_crec_simple %>%
         plot.title = element_text(size = 18),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        axis.title = element_text(size = 12), 
-        axis.text=element_text(size = 12), 
-        strip.text.y = element_text(size = 12))
+        axis.title = element_text(size = 15), 
+        axis.text=element_text(size = 15), 
+        strip.text.y = element_text(size = 15))
 ```
 ]
 
@@ -786,9 +786,9 @@ var_crec_dsf_simple %>%
         plot.title = element_text(size = 18),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        axis.title = element_text(size = 12), 
-        axis.text=element_text(size = 12), 
-        strip.text.y = element_text(size = 12))
+        axis.title = element_text(size = 15), 
+        axis.text=element_text(size = 15), 
+        strip.text.y = element_text(size = 15))
 ```
 ]
 
@@ -883,9 +883,9 @@ vecm_dsf_crec_simple %>%
         plot.title = element_text(size = 18),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        axis.title = element_text(size = 12), 
-        axis.text=element_text(size = 12), 
-        strip.text.y = element_text(size = 12))
+        axis.title = element_text(size = 15), 
+        axis.text=element_text(size = 15), 
+        strip.text.y = element_text(size = 15))
 
 ```
 
@@ -921,9 +921,9 @@ vecm_crec_dsf_simple %>%
         plot.title = element_text(size = 18),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        axis.title = element_text(size = 12), 
-        axis.text=element_text(size = 12), 
-        strip.text.y = element_text(size = 12))
+        axis.title = element_text(size = 15), 
+        axis.text=element_text(size = 15), 
+        strip.text.y = element_text(size = 15))
 
 ```
 ]
@@ -970,14 +970,14 @@ irf_data_long %>%
   ggtitle("Impacto en el des. s.f. a un impulso en el crec. econ \n ") +
   theme_bw() %+replace%
   theme(legend.position = "bottom",
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size = 13),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15),
         plot.title = element_text(size = 18),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        axis.title = element_text(size = 12), 
-        axis.text=element_text(size = 12), 
-        strip.text.y = element_text(size = 12))
+        axis.title = element_text(size = 15), 
+        axis.text=element_text(size = 15), 
+        strip.text.y = element_text(size = 15))
 ```
 ]
 
@@ -1018,14 +1018,14 @@ irf_data_long %>%
   ggtitle("Impacto en el crec. econ a un impulso en el des. s.f. \n ") +
   theme_bw() %+replace%
   theme(legend.position = "bottom", 
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size = 13),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15),
         plot.title = element_text(size = 18),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        axis.title = element_text(size = 12), 
-        axis.text=element_text(size = 12), 
-        strip.text.y = element_text(size = 12))
+        axis.title = element_text(size = 15), 
+        axis.text=element_text(size = 15), 
+        strip.text.y = element_text(size = 15))
 
 ```
 ]
@@ -1155,9 +1155,9 @@ kable(estimaciones_2021, booktabs = TRUE,
 
 ### Análisis de Sensibilidad    
 
-** Pasos:**
+**Procedimiento:**
 
-* Por cada rango de cuantil, para cada variable, se generó 100 observaciones, manteniendo los valores del escenario base para las demás variables exógenas.
+* Por cada rango de cuantil, para cada covariable, se generó 100 observaciones, manteniendo los valores del escenario base para las demás covariables.
 
 * Con los datos generados para las covariables, se estiman los valores empleando el modelo VAR.
 
@@ -1247,7 +1247,7 @@ crec_mat %>%
   column_spec(6, width = "7em", background = case_when(crec_mat$vartc > crec_colores$l.sup ~ 'lightgreen',
                                                         crec_mat$vartc < crec_colores$l.inf ~ 'lightcoral',
                                                         TRUE ~ 'white')) %>% 
-  footnote(symbol = c(
+  footnote(general = c(
     "> límite superior estimación del modelo VAR en escenario base (Verde)", 
     "< límite inferior estimación del modelo VAR en escenario base (Rojo)"),  
     general_title = "")
@@ -1257,9 +1257,9 @@ crec_mat %>%
 
 ### Análisis de Sensibilidad
 
-** Pasos:**
+**Procedimiento:**
 
-* Por cada rango de cuantil, para cada variable, se generó 100 observaciones, manteniendo los valores del escenario base para las demás variables exógenas.
+* Por cada rango de cuantil, para cada covariable, se generó 100 observaciones, manteniendo los valores del escenario base para las demás covariables.
 
 * Con los datos generados para las covariables, se estiman los valores empleando el modelo VAR.
 
@@ -1307,12 +1307,263 @@ des.sf_mat %>%
   column_spec(6, width = "7em", background = case_when(des.sf_mat$vartc > des.sf_colores$l.sup ~ 'lightgreen',
                                                        des.sf_mat$vartc < des.sf_colores$l.inf ~ 'lightcoral',
                                                        TRUE ~ 'white')) %>% 
-  footnote(symbol = c(
+  footnote(general = c(
     "> límite superior estimación del modelo VAR en escenario base (Verde)", 
     "< límite inferior estimación del modelo VAR en escenario base (Rojo)"),  
     general_title = "")
 
 ```
 
+---
 
+### Escenario de estrés económico
 
+**Supuestos:**
+
+.small[
+* Se simula un escenario de crisis interna ocasionado por un deterioro de la situación fiscal: 
+  + Aumento en tasas de interés
+  + Alta inflación
+  + Alta volatilidad en el tipo de cambio
+  
+* Se generó 100 escenarios incluyendo valores mayores al percentil 80 de los datos históricos en las tres variables. 
+
+* Se consideran los valores del escenario base para el crecimiento del PIB de EUA y el indicador de apertura comercial.
+]
+
+--
+
+```{r, echo = FALSE, fig.width = 9, fig.height = 4.25 , fig.align = 'center'}
+ultima_fecha <- data$fecha[nrow(data)]
+ultima_tendencia <- var$datamat$trend[nrow(var$datamat)]
+
+set.seed(130618)
+data_sim2 <- tibble(iter = 1:100) %>% 
+  mutate(apert_comercial = rep(escen_base %>% select(`Apertura Comercial`), 100), 
+         cpib.usa = rep(escen_base %>% select(`PIB USA`), 100),
+         inflacion = map(iter, ~ generar_datos_sim2(data, inflacion, 0.80, 1)),
+         tbp = map(iter, ~ generar_datos_sim2(data, tbp, 0.80, 1)),
+         vartc = map(iter, ~ generar_datos_sim2(data, vartc, 0.80, 1)),
+         determ = map(iter, ~ generar_determ(ultima_fecha, ultima_tendencia))) %>%
+  unnest(-c(iter)) %>% 
+  nest(data_var = apert_comercial:est.d4, 
+       data_vecm = apert_comercial:tendencia)
+
+pred2 <- data_sim2 %>%
+  summarize(iter = iter,
+            var_pred = map(data_var, ~ predict(var, dumvar = .,
+                                               n.ahead = 4)$fcst), 
+            vecm_pred = map(data_vecm, ~predict(vecm.level, 
+                                                dumvar = as.matrix(.),
+                                                n.ahead = 4)$fcst)) %>% 
+  unnest(c(var_pred, vecm_pred)) %>% 
+  mutate(y = rep(c("cpib.cri", "des.sf"), n() / 2)) %>%  
+  unnest(c(var_pred, vecm_pred)) %>% 
+  pivot_longer(-c(iter, y), names_sep = "_", names_to = c("mod", "pred")) %>% 
+  select(-pred) 
+
+sim2_cpib <- pred2 %>% filter(y == "cpib.cri") %>% 
+  select(-y) %>%
+  mutate(periodo = rep(c(rep(1, 2), rep(2, 2), rep(3, 2), rep(4, 2)), n() / 8), 
+         fecha = add_with_rollback(ultima_fecha, months(periodo * 3)), 
+         fecha.l4 = add_with_rollback(fecha, months(-12))) %>% 
+  left_join(data %>% select(fecha, pibr), by = c("fecha.l4" = "fecha")) %>% 
+  select(-periodo) %>% 
+  mutate(pibr.l4 = pibr) %>% 
+  select(-pibr) %>% 
+  mutate(`estimación puntual` = value[, 1], 
+         l.inf = value[, 2], 
+         l.sup = value[, 3]) %>% 
+  select(-value) %>% 
+  pivot_longer(-c(iter, mod, fecha, fecha.l4, pibr.l4), 
+               names_to = "tipo", values_to = "cpib.cri") %>% 
+  mutate(pibr = exp(cpib.cri + log(pibr.l4)))
+
+cpib_data <- data %>% 
+  select(fecha, pibr, cpib.cri) %>% 
+  mutate(iter = NA,
+         mod = "real",
+         tipo = NA,
+         fecha = fecha,
+         pibr = pibr, 
+         cpib.cri = cpib.cri) %>% 
+  relocate(c(iter, mod), .before = fecha) %>% 
+  bind_rows(sim2_cpib %>% select(iter, mod, fecha, tipo, pibr, cpib.cri)) %>% 
+  mutate(fecha.l4 = add_with_rollback(fecha, months(-12)), 
+         año = year(fecha)) %>% 
+  left_join(data %>% select(fecha, pibr) %>% 
+              summarize(fecha = fecha, 
+                        pibr.l4 = pibr),
+            by = c("fecha.l4" = "fecha")) %>% 
+  group_by(mod, año, tipo, iter) %>% 
+  mutate(cpib.anual = log(sum(pibr)) - log(sum(pibr.l4))) 
+
+cpib_proy_sim2 <- cpib_data %>% 
+  filter(mod == "var", 
+         tipo == "estimación puntual") %>% 
+  group_by(fecha) %>% 
+  summarize('máximo' = max(cpib.cri), 
+            'mediana' = median(cpib.cri), 
+            'mínimo' = min(cpib.cri)) %>% 
+  bind_rows(tibble(fecha = date("2020-12-01"), 
+                   'máximo' = data %>%
+                     select(fecha, cpib.cri) %>% 
+                     filter(fecha == "2020-12-01") %>% 
+                     select(-fecha) %>% 
+                     as.numeric(), 
+                   mediana = `máximo`, 
+                   mínimo = `máximo`))
+
+cpib_anual_proy_sim2 <- cpib_data %>% 
+  filter(mod == "var", 
+         tipo == "estimación puntual") %>% 
+  group_by(año) %>% 
+  summarize('máximo' = max(cpib.anual), 
+            'mediana' = median(cpib.anual), 
+            'mínimo' = min(cpib.anual)) %>% 
+  bind_rows(tibble("año" = 2020, 
+                   'máximo' = cpib_data %>%
+                     ungroup() %>% 
+                     select(fecha, cpib.anual) %>% 
+                     filter(fecha == "2020-12-01") %>% 
+                     select(-fecha) %>% 
+                     as.numeric(), 
+                   mediana = `máximo`, 
+                   mínimo = `máximo`))
+
+ggplot() + 
+  geom_line(data = cpib_data %>% 
+              filter(mod == "real", `año` > 2000),
+            aes(x = `año`, y = cpib.anual)) +
+  geom_ribbon(data = cpib_anual_proy_sim2, aes(x = `año`, ymax = `máximo`, ymin = `mínimo`, fill = "Escenario Estrés")) +
+  geom_line(data = cpib_2021 %>% filter(tipo == "upper"), aes(y = crec.anual, x = yr, colour = "IC Escenario Base"), linetype = "dashed") +
+  geom_line(data = cpib_2021 %>% filter(tipo == "lower"), aes(y = crec.anual, x = yr, colour = "IC Escenario Base"), linetype = "dashed") +
+  scale_color_manual(values = c(`IC Escenario Base` = "blue")) +
+  scale_fill_manual(values = c(`Escenario Estrés` = "grey70")) +                  
+  ylab("Crecimiento Económico") +
+  ggtitle("Crecimiento económico anual y el intervalo de predicción del escenario estresado para 2021") + 
+  theme_classic() %+replace% 
+  theme(legend.text = element_text(size = 11),
+        plot.title = element_text(size = 12),
+        axis.title = element_text(size = 11), 
+        axis.text=element_text(size = 11), 
+        strip.text.y = element_text(size = 11),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        panel.grid.major.y = element_line(color = "grey70",
+                                          size = 0.5, 
+                                          linetype = 2))
+```
+
+---
+
+### Escenario de estrés económico
+
+**Supuestos:**
+
+.small[
+* Se simula un escenario de crisis interna ocasionado por un deterioro de la situación fiscal: 
+  + Aumento en tasas de interés
+  + Alta inflación
+  + Alta volatilidad en el tipo de cambio
+  
+* Se generó 100 escenarios incluyendo valores mayores al percentil 80 de los datos históricos en las tres variables. 
+
+* Se consideran los valores del escenario base para el crecimiento del PIB de EUA y el indicador de apertura comercial.
+]
+
+```{r, r, echo = FALSE, fig.width = 9, fig.height = 4.25 , fig.align = 'center'}
+
+#Desarrollo del Sistema Financiero
+sim2_des.sf <- pred2 %>% filter(y == "des.sf") %>% 
+  select(-y) %>%
+  mutate(periodo = rep(c(rep(1, 2), rep(2, 2), rep(3, 2), rep(4, 2)), n() / 8), 
+         fecha = add_with_rollback(ultima_fecha, months(periodo * 3))) %>% 
+  select(-periodo) %>% 
+  mutate(`estimación puntual` = value[, 1], 
+         l.inf = value[, 2], 
+         l.sup = value[, 3]) %>% 
+  select(-value) %>% 
+  pivot_longer(-c(iter, mod, fecha), names_to = "tipo", values_to = "des.sf")
+
+des.sf_data <- data %>% 
+  select(fecha, des.sf) %>% 
+  mutate(iter = NA,
+         mod = "real",
+         fecha = fecha) %>% 
+  relocate(iter, .before = fecha) %>% 
+  bind_rows(sim2_des.sf %>% select(iter, mod, fecha, tipo, des.sf)) %>% 
+  mutate(fecha.l4 = add_with_rollback(fecha, months(-12)), 
+         año = year(fecha)) %>% 
+  left_join(data %>% select(fecha, des.sf) %>% 
+              summarize(fecha = fecha, 
+                        des.sf.l4 = des.sf), 
+            by = c("fecha.l4" = "fecha")) 
+
+ds_proy_sim2 <- des.sf_data %>% 
+  filter(mod == "var", 
+         tipo == "estimación puntual") %>% 
+  group_by(fecha) %>% 
+  summarize('máximo' = max(des.sf), 
+            'mediana' = median(des.sf), 
+            'mínimo' = min(des.sf)) %>% 
+  bind_rows(tibble(fecha = date("2020-12-01"), 
+                   'máximo' = data %>%
+                     select(fecha, des.sf) %>% 
+                     filter(fecha == "2020-12-01") %>% 
+                     select(-fecha) %>% 
+                     as.numeric(), 
+                   mediana = `máximo`, 
+                   mínimo = `máximo`))
+
+ggplot() + 
+  geom_line(data = des.sf_data %>% filter(mod == "real", fecha > "2010-01-01"),
+            aes(x = fecha, y = des.sf)) +
+  geom_ribbon(data = ds_proy_sim2, aes(x = fecha, ymax = `máximo`, ymin = `mínimo`, fill = "Escenario Estrés")) +
+  geom_line(data = pred_des.sf, aes(y = upper, x = fecha, colour = "IC Escenario Base"), linetype = "dashed") +
+  geom_line(data = pred_des.sf, aes(y = lower, x = fecha, colour = "IC Escenario Base"), linetype = "dashed") +
+  scale_color_manual(values = c(`IC Escenario Base` = "blue")) +
+  scale_fill_manual(values = c(`Escenario Estrés` = "grey70")) +
+  ylab("Desarrollo del Sist. Financiero") +
+  ggtitle("Desarrollo del S.F. y el intervalo de predicción del escenario estresado para 2021") + 
+  theme_classic() %+replace% 
+  theme(legend.text = element_text(size = 11),
+        plot.title = element_text(size = 12),
+        axis.title = element_text(size = 11), 
+        axis.text=element_text(size = 11), 
+        strip.text.y = element_text(size = 11),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        panel.grid.major.y = element_line(color = "grey70",
+                                          size = 0.5, 
+                                          linetype = 2))
+```
+
+---
+
+class: inverse, center, middle
+
+# CONCLUSIONES
+
+---
+
+<br>
++ Se aporta evidencia estadísticamente significatica sobre el nexo entre crecimiento económico y desarrollo del sistema financiero.  
+
+<br>
++  La respuesta del crecimiento económico a un shock en el desarrollo del sistema financiero es estadísticamente significativo.   
+
+<br>
++ Los resultados de las funciones impulso-respuesta del desarrollo del sistema financiero a un impulso en el crecimiento económico difieren entre el VAR y el VECM.   
+
+<br>
++ La prueba de causalidad aporta evidencia sobre la relación de causalidad (en el sentido de Granger) bidireccional entre las variables.
+
+<br>
++ En el contexto económico actual caracterizado por la alta incertidumbre, resulta fundamental contar con herramientas que permitan diseñar distintos escenarios y que sirvan de apoyo para la toma de decisiones.
+
+---
+
+class: inverse, center, middle
+
+# GRACIAS
