@@ -934,54 +934,7 @@ vecm_crec_dsf_simple %>%
 
 <br>
 .pull-left.w45[
-```{r,echo=FALSE}
 
-irf_data <- tibble(VAR_crec.econ = irf(var,
-                                       impulse = "des.sf",
-                                       response =  "cpib.cri",
-                                       n.ahead = 12,
-                                       boot = F)$irf$des.sf[, 1], 
-                   VECM_crec.econ = irf(vecm.level,
-                                        impulse = "des.sf",
-                                        response =  "cpib.cri",
-                                        n.ahead = 12,
-                                        boot = F)$irf$des.sf[, 1], 
-                   VAR_des.sf = irf(var,
-                                    impulse = "cpib.cri",
-                                    response =  "des.sf",
-                                    n.ahead = 12,
-                                    boot = F)$irf$cpib.cri[, 1],
-                   VECM_des.sf = irf(vecm.level,
-                                    impulse = "cpib.cri",
-                                    response = "des.sf",
-                                    n.ahead = 12,
-                                    boot = F)$irf$cpib.cri[, 1]) %>% 
-  mutate(periodo = 1:n())
-
-irf_data_long <- irf_data %>% 
-  pivot_longer(-periodo, names_sep = "_", names_to = c("modelo", "indicador"), values_to = "irf")
-
-irf_data_long %>% 
-  dplyr::filter(indicador == "des.sf") %>% 
-  ggplot(aes(x = periodo, y = irf, colour = modelo)) + geom_line(size = 1) +
-  scale_color_manual(values = c("red", "darkblue")) +
-  scale_x_continuous(breaks = seq(0, 24, by = 2)) +
-  ylab("Desarrollo del s.f.") +
-  ggtitle("Impacto en el des. s.f. a un impulso en el crec. econ \n ") +
-  theme_bw() %+replace%
-  theme(legend.position = "bottom",
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 15),
-        plot.title = element_text(size = 18),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        axis.title = element_text(size = 15), 
-        axis.text=element_text(size = 15), 
-        strip.text.y = element_text(size = 15))
-```
-]
-
-.pull-right.w45[
 ```{r, echo=FALSE}
 
 irf_data <- tibble(VAR_crec.econ = irf(var,
@@ -1028,6 +981,56 @@ irf_data_long %>%
         strip.text.y = element_text(size = 15))
 
 ```
+
+]
+
+.pull-right.w45[
+```{r,echo=FALSE}
+
+irf_data <- tibble(VAR_crec.econ = irf(var,
+                                       impulse = "des.sf",
+                                       response =  "cpib.cri",
+                                       n.ahead = 12,
+                                       boot = F)$irf$des.sf[, 1], 
+                   VECM_crec.econ = irf(vecm.level,
+                                        impulse = "des.sf",
+                                        response =  "cpib.cri",
+                                        n.ahead = 12,
+                                        boot = F)$irf$des.sf[, 1], 
+                   VAR_des.sf = irf(var,
+                                    impulse = "cpib.cri",
+                                    response =  "des.sf",
+                                    n.ahead = 12,
+                                    boot = F)$irf$cpib.cri[, 1],
+                   VECM_des.sf = irf(vecm.level,
+                                    impulse = "cpib.cri",
+                                    response = "des.sf",
+                                    n.ahead = 12,
+                                    boot = F)$irf$cpib.cri[, 1]) %>% 
+  mutate(periodo = 1:n())
+
+irf_data_long <- irf_data %>% 
+  pivot_longer(-periodo, names_sep = "_", names_to = c("modelo", "indicador"), values_to = "irf")
+
+irf_data_long %>% 
+  dplyr::filter(indicador == "des.sf") %>% 
+  ggplot(aes(x = periodo, y = irf, colour = modelo)) + geom_line(size = 1) +
+  scale_color_manual(values = c("red", "darkblue")) +
+  scale_x_continuous(breaks = seq(0, 24, by = 2)) +
+  ylab("Desarrollo del s.f.") +
+  ggtitle("Impacto en el des. s.f. a un impulso en el crec. econ \n ") +
+  theme_bw() %+replace%
+  theme(legend.position = "bottom",
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        plot.title = element_text(size = 18),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title = element_text(size = 15), 
+        axis.text=element_text(size = 15), 
+        strip.text.y = element_text(size = 15))
+```
+
 ]
 
 ---
