@@ -1554,7 +1554,7 @@ class: inverse, center, middle
 + Se aporta evidencia estadísticamente significativa sobre el nexo entre crecimiento económico y desarrollo del sistema financiero.  
 
 <br>
-+ El crecimiento económico aumenta entre 0.4% y 0.6% al incrementar en una unidad del desarrollo del sistema financiero.  
++ La respuesta del crecimiento económico es alrededor de 0.5% al incrementar en una unidad el desarrollo del sistema financiero.  
 
 <br>
 + Los resultados de las funciones impulso-respuesta del desarrollo del sistema financiero a un impulso en el crecimiento económico difieren entre el VAR y el VECM.   
