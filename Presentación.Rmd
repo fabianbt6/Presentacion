@@ -209,7 +209,7 @@ generar_determ <- function(fecha1, tendencia1){
 
 <br>
 
-<p style="font-size:21pt; text-align:center; font-weight:bold"> 
+<p style="font-size:22pt; text-align:center; font-weight:bold"> 
 
 Nexo entre crecimiento económico y desarrollo del sistema financiero: análisis de cointegración y series de tiempo para el caso de Costa Rica
 
@@ -217,7 +217,7 @@ Nexo entre crecimiento económico y desarrollo del sistema financiero: análisis
 
 <br>
 
-<p style="font-size:21pt; text-align:center; font-weight:bold"> 
+<p style="font-size:18pt; text-align:center; font-weight:bold"> 
 
 Trabajo final de investigación aplicada
 
@@ -225,7 +225,7 @@ Trabajo final de investigación aplicada
 
 <br>
 
-<p style="font-size:21pt; text-align:center; font-weight:bold"> 
+<p style="font-size:18pt; text-align:center; font-weight:bold"> 
 
 Posgrado en Estadística, Universidad de Costa Rica
 
@@ -233,7 +233,7 @@ Posgrado en Estadística, Universidad de Costa Rica
 
 <br>
 
-<p style="font-size:21pt; text-align:center; font-weight:bold"> 
+<p style="font-size:18pt; text-align:center; font-weight:bold"> 
 
 Estudiante: Fabián Brenes Trejos
 
@@ -241,7 +241,7 @@ Estudiante: Fabián Brenes Trejos
 
 <br>
 
-<p style="font-size:21pt; text-align:center; font-weight:bold"> 
+<p style="font-size:18pt; text-align:center; font-weight:bold"> 
 
 18/1/2022
 
@@ -321,14 +321,14 @@ DiagrammeR::grViz("digraph {
  
 --
 
-**¿Cuál es la relación entre el desarrollo del sistema financiero costarricense con respecto al crecimiento económico experimentado de 1997 a 2020?**
+**¿Cuál es la relación entre el desarrollo del sistema financiero costarricense con respecto al crecimiento económico experimentado de 2000 a 2020?**
 
 ---
 
 ## Objetivos
 
 ### General
-Estudiar la relación entre el desarrollo del sistema financiero y el crecimiento económico mediante modelos de series temporales multivariados, para el caso de Costa Rica, en el periodo 1997 - 2020.
+Estudiar la relación entre el desarrollo del sistema financiero y el crecimiento económico mediante modelos de series temporales multivariados, para el caso de Costa Rica, en el periodo 2000 - 2020.
 
 ### Específicos
 - .small[Conocer tendencias, valores atípicos y correlaciones mediante un análisis exploratorio.]
@@ -572,6 +572,7 @@ $$\sigma^2(X|U) < \sigma^2 (X|\overline{U-Y})$$
 En donde: 
 + $U$: Representa toda la información disponible. 
 + $\overline{Y}$: Valores pasados de $Y$. 
++ $\overline{U-Y}$: Toda la información disponible pasada ( $\overline{U}$ ) menos la información pasada de $Y$.
 
 ---
 
