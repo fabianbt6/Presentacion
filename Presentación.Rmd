@@ -1,11 +1,14 @@
 ---
-title: "Desarrollo del sistema financiero y crecimiento económico en Costa Rica"
+title: "Nexo entre crecimiento económico y desarrollo del sistema financiero:"
+subtitle: "análisis de cointegración y series de tiempo para el caso de Costa Rica"
 author: "Fabián Brenes Trejos"
 date: "18/1/2022"
 output:
   xaringan::moon_reader:
+    seal: false
     css: [xaringan-themer.css, width.css, estilo.css]
     lib_dir: libs
+    slide_level: 2
     nature:
       highlightStyle: github
       highlightLines: true
@@ -202,10 +205,53 @@ generar_determ <- function(fecha1, tendencia1){
 
 ```
 
+<slide style= "plain"> </slide>
+
+<br>
+
+<p style="font-size:21pt; text-align:center; font-weight:bold"> 
+
+Nexo entre crecimiento económico y desarrollo del sistema financiero: análisis de cointegración y series de tiempo para el caso de Costa Rica
+
+</p>
+
+<br>
+
+<p style="font-size:21pt; text-align:center; font-weight:bold"> 
+
+Trabajo final de investigación aplicada
+
+</p>
+
+<br>
+
+<p style="font-size:21pt; text-align:center; font-weight:bold"> 
+
+Posgrado en Estadística, Universidad de Costa Rica
+
+</p>
+
+<br>
+
+<p style="font-size:21pt; text-align:center; font-weight:bold"> 
+
+Estudiante: Fabián Brenes Trejos
+
+</p>
+
+<br>
+
+<p style="font-size:21pt; text-align:center; font-weight:bold"> 
+
+18/1/2022
+
+</p>
+
+---
+
 ## CONTENIDO
 
-- Introducción 
-<br>
+- Introducción <br>
 
 - Objetivos <br>    
 
@@ -213,15 +259,15 @@ generar_determ <- function(fecha1, tendencia1){
 
 - Resultados <br>
 
-    + Modelo VAR <br>
+    + Modelo de Vectores Autorregresivos (VAR) <br>
     
     + Análisis de cointegración <br>
     
-    + Modelo VECM <br>
+    +  modelo de corrección de error vectorial (VECM) <br>
     
     + Comparativo VAR y VECM <br>
     
-    + Resultados de la simulación <br>
+    + Estudios de simulación <br>
 
 - Conclusiones
 
@@ -291,11 +337,10 @@ Estudiar la relación entre el desarrollo del sistema financiero y el crecimient
 - .small[Analizar los supuestos de estacionariedad por medio de análisis gráfico y pruebas estadísticas.]
 <br>
 
-- .small[Estudiar la cointegración entre las variables a partir de un modelo de vectores autorregresivos (VAR).]
+- .small[Estudiar la cointegración entre las variables a partir de un modelo VAR.]
 <br>
 
-- .small[Estimar los parámetros de cointegración con base en un modelo de corrección
-de error vectorial (VECM).]
+- .small[Estimar los parámetros de cointegración con base en un VECM.]
 
 - .small[Identificar políticas para impulsar el crecimiento económico, mediante un estudio de simulaciones con el modelo ajustado.]
 
@@ -606,7 +651,7 @@ $$\begin{alignat}{1}
 
 Incluye:  
 
-+ 4 rezagos de las variables endógenas con base al criterio de Akaike
++ 4 rezagos de las variables endógenas con base al AIC
 <br>
 
 + cinco variables exógenas 
@@ -1035,7 +1080,7 @@ irf_data_long %>%
 
 ---
 
-## Simulaciones
+## Estudio de simulación
 
 ### 1. Análisis de Sensibilidad
 
@@ -1162,7 +1207,7 @@ kable(estimaciones_2021, booktabs = TRUE,
 
 * Por cada rango de cuantil, para cada covariable, se generó 100 observaciones, manteniendo los valores del escenario base para las demás covariables.
 
-* Con los datos generados para las covariables, se estiman los valores empleando el modelo VAR.
+* Con los datos generados se estiman los valores empleando el modelo VAR.
 
 * Los resultados se comparan con el escenario base.
 
@@ -1264,7 +1309,7 @@ crec_mat %>%
 
 * Por cada rango de cuantil, para cada covariable, se generó 100 observaciones, manteniendo los valores del escenario base para las demás covariables.
 
-* Con los datos generados para las covariables, se estiman los valores empleando el modelo VAR.
+* Con los datos generados se estiman los valores empleando el modelo VAR.
 
 * Los resultados se comparan con el escenario base.
 
