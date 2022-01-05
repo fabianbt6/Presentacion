@@ -572,7 +572,7 @@ $$\sigma^2(X|U) < \sigma^2 (X|\overline{U-Y})$$
 En donde: 
 + $U$: Representa toda la información disponible. 
 + $\overline{Y}$: Valores pasados de $Y$. 
-+ $\overline{U-Y}$: Toda la información disponible pasada ( $\overline{U}$ ) menos la información pasada de $Y$.
++ $U-Y$: Toda la información disponible eliminando la información de $Y$.
 
 ---
 
