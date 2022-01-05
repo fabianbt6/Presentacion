@@ -209,7 +209,7 @@ generar_determ <- function(fecha1, tendencia1){
 
 <br>
 
-<p style="font-size:22pt; text-align:center; font-weight:bold"> 
+<p style="font-size:24pt; text-align:center; font-weight:bold"> 
 
 Nexo entre crecimiento económico y desarrollo del sistema financiero: análisis de cointegración y series de tiempo para el caso de Costa Rica
 
