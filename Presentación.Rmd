@@ -259,11 +259,11 @@ Estudiante: Fabián Brenes Trejos
 
 - Resultados <br>
 
-    + Modelo de Vectores Autorregresivos (VAR) <br>
-    
     + Análisis de cointegración <br>
     
-    +  modelo de corrección de error vectorial (VECM) <br>
+    + Modelo de Vectores Autorregresivos (VAR) <br>
+    
+    + Modelo de corrección de error vectorial (VECM) <br>
     
     + Comparativo VAR y VECM <br>
     
@@ -303,6 +303,12 @@ DiagrammeR::grViz("digraph {
 ```
 ]
 
+<br>
+.small[
+Fuente:  Levine, R. (1997). Financial Development and Economic Growth: Views and Agenda.
+Journal of Economic Literature, 35(2):688–726.
+]
+
 ---
 
 ## Justificación del estudio
@@ -334,7 +340,7 @@ Estudiar la relación entre el desarrollo del sistema financiero y el crecimient
 - .small[Conocer tendencias, valores atípicos y correlaciones mediante un análisis exploratorio.]
 <br>
 
-- .small[Analizar los supuestos de estacionariedad por medio de análisis gráfico y pruebas estadísticas.]
+- .small[Analizar la estacionariedad por medio de análisis gráfico y pruebas estadísticas.]
 <br>
 
 - .small[Estudiar la cointegración entre las variables a partir de un modelo VAR.]
@@ -376,11 +382,11 @@ class: inverse, center, middle
 + Producto Interno Bruto real de EUA (variación interanual)
 + Inflación
 + Tasa Básica Pasiva
-+ Tipo de Cambio (variación internual)
++ Tipo de Cambio (variación interanual)
 
 ---
 
-## Crecimiento internual de la economía
+## Crecimiento interanual de la economía
 
 Cálculo: $log(PIB_t / PIB_{t-4})$ 
 
@@ -410,7 +416,7 @@ tab <- tibble("Estadístico" = round(t(pibr_df@teststat)[, 1], 2) ,
   relocate(`Parámetro`, .before = "Estadístico")
 
 kable(tab, 
-      booktabs = TRUE, caption = "Prueba Dickey-Fuller",
+      booktabs = TRUE, caption = "Prueba Dickey-Fuller Aumentada",
       label = "DF_niveles") %>%
   kable_classic("hover", full_width = F, font_size = 12)  %>% 
   column_spec(1, width = "10em") %>% 
@@ -451,7 +457,7 @@ tab <- tibble("Estadístico" = round(t(cred_pib_df@teststat)[, 1], 2) ,
   relocate(`Parámetro`, .before = "Estadístico")
 
 kable(tab, 
-      booktabs = TRUE, caption = "Prueba Dickey-Fuller",
+      booktabs = TRUE, caption = "Prueba Dickey-Fuller Aumentada",
       label = "DF_niveles") %>%
   kable_classic("hover", full_width = F, font_size = 12)  %>% 
   column_spec(1, width = "10em") %>% 
@@ -609,7 +615,7 @@ Se estiman 2 modelos y se analiza el parámetro $\Pi$:
 
 1. Modelo sin covariables:
 $$\Delta Y_t = \Gamma_1 \Delta Y_{t-1} + \cdots + \Gamma_{k-1} \Delta Y_{t-k+1} + \Pi Y_{t-k} + \mu + \epsilon_t$$  
-2. Modelos con covariables:
+2. Modelo con covariables:
 $$\Delta Y_t = \Gamma_1 \Delta Y_{t-1} + \cdots + \Gamma_{k-1} \Delta Y_{t-k+1} + \Pi Y_{t-k} + \mu + \Omega X_t + \epsilon_t$$
 
 <br>
@@ -655,7 +661,7 @@ Incluye:
 + 4 rezagos de las variables endógenas con base al AIC
 <br>
 
-+ cinco variables exógenas 
++ 5 variables exógenas 
 <br>
 
 + Constante 
@@ -1061,7 +1067,7 @@ irf_data_long <- irf_data %>%
 irf_data_long %>% 
   dplyr::filter(indicador == "des.sf") %>% 
   ggplot(aes(x = periodo, y = irf, colour = modelo)) + geom_line(size = 1) +
-  scale_color_manual(values = c("red", "darkblue")) +
+  scale_color_manual(values = c("red", "#1f7aff")) + 
   scale_x_continuous(breaks = seq(0, 24, by = 2)) +
   ylab("Desarrollo del s.f.") +
   ggtitle("Impacto en el des. s.f. a un impulso en el crec. econ \n ") +
@@ -1177,7 +1183,8 @@ estimaciones_2021_trim <- tibble(pred_cpib) %>%
   left_join(pred_des.sf, by = "fecha") %>% 
   pivot_longer(-fecha) %>% 
   mutate(value = round(value, 2)) %>% 
-  pivot_wider(fecha)
+  pivot_wider(fecha) %>% 
+  filter(fecha != "2020-12-01") 
 
 kable(estimaciones_2021_trim, 
              caption = "Trimestral",
@@ -1606,7 +1613,7 @@ class: inverse, center, middle
 + Los resultados de las funciones impulso-respuesta del desarrollo del sistema financiero a un impulso en el crecimiento económico difieren entre el VAR y el VECM.   
 
 <br>
-+ La prueba de causalidad aporta evidencia sobre la relación de causalidad (en el sentido de Granger) bidireccional entre las variables.
++ Existe una relación de causalidad (en el sentido de Granger) bidireccional entre las variables.
 
 <br>
 + En el contexto económico actual caracterizado por la alta incertidumbre, resulta fundamental contar con herramientas que permitan diseñar distintos escenarios y que sirvan de apoyo para la toma de decisiones.
