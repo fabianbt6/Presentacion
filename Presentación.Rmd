@@ -670,7 +670,7 @@ Incluye:
 + Tendencia 
 <br>
 
-+ variables dicotómicas para capturar estacionalidad
++ Variables dicotómicas para capturar estacionalidad
 
 ---
 ### Modelo VAR: Coeficientes estimados y pruebas de diagnóstico
