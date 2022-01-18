@@ -1616,7 +1616,7 @@ class: inverse, center, middle
 + Existe una relación de causalidad (en el sentido de Granger) bidireccional entre las variables.
 
 <br>
-+ En el contexto económico actual caracterizado por la alta incertidumbre, resulta fundamental contar con herramientas que permitan diseñar distintos escenarios y que sirvan de apoyo para la toma de decisiones.
++ En un contexto económico caracterizado por la alta incertidumbre, resulta fundamental contar con herramientas que permitan diseñar distintos escenarios y que sirvan de apoyo para la toma de decisiones.
 
 ---
 
