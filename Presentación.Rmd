@@ -560,7 +560,7 @@ En donde:
 + $A_i$: Es una matriz de coeficientes de tamaño $(K \times K)$ con $i = 1,\ldots, p$
 <br>
 <br>
-+ $\mathbf{u}_t$: Es un vector de procesos ruido blanco e invariante en el tiempo de $K$ dimensiones y covarianza definida y positiva $E(\mathbf{u}_t \mathbf{u}'_t) = \sum{u}$
++ $\mathbf{u}_t$: Es un vector de procesos ruido blanco e invariante en el tiempo de $K$ dimensiones y covarianza definida y positiva $E(\mathbf{u}_t \mathbf{u}'_t) = \sum_{u}$
 <br>
 <br>
 + $C$: Es una matriz de coeficientes de potenciales regresores determinísticas de tamaño $(K \times M)$ y $D_t$ son las variables determinísticas asociadas a $C$
