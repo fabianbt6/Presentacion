@@ -219,7 +219,7 @@ Nexo entre crecimiento económico y desarrollo del sistema financiero: análisis
 
 <p style="font-size:18pt; text-align:center; font-weight:bold"> 
 
-Simposio Internacional de Métodos Matemáticos Aplicados a las Ciencias (SIMMAC) 
+XV Jornadas de Análisis Estadístico
 
 </p>
 
@@ -237,6 +237,12 @@ Universidad de Costa Rica
 
 Estudiante: Fabián Brenes Trejos
 
+<br>
+
+<p style="font-size:18pt; text-align:center; font-weight:bold"> 
+  
+Tutor: Shu Wei Choun
+  
 </p>
 
 <br>
